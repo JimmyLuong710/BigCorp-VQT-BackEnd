@@ -5,7 +5,7 @@ import {
   deleteOrder,
   getOrdersPending,
   handleOrder,
-} from "../controllers/order.controller";
+} from "../controllers/transport.controller";
 require("express-async-errors");
 
 const orderRouter = express.Router();
