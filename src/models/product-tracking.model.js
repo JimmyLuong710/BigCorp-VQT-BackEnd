@@ -8,6 +8,10 @@ const schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product"
     },
+    status: {
+      type: String,
+      enum: ["RECYCLED", "UNDER_WARRANTY", "IS_USING", "IN_STOCK"]
+    },
     progress: [
       {
         action: {

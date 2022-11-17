@@ -4,7 +4,7 @@ import AuthService from "../services/AuthService";
 import DbService from "../services/DbService";
 
 const getAccounts = async (req, res) => {
-  if (req.account.role !== "admin") {
+  if (req.account.role !== "ADMIN") {
     throw new ApiError(403, "Not authorized");
   }
 
@@ -22,7 +22,7 @@ const getAccounts = async (req, res) => {
 };
 
 const getAccount = async (req, res) => {
-  if (req.account.role !== "admin") {
+  if (req.account.role !== "ADMIN") {
     throw new ApiError(403, "Not authorized");
   }
 
@@ -37,13 +37,13 @@ const getAccount = async (req, res) => {
 };
 
 const updateAccount = async (req, res) => {
-  if (req.account.role == "admin" || req.account._id == req.params.accountId) {
+  if (req.account.role == "ADMIN" || req.account._id == req.params.accountId) {
     let account = await DbService.updateOne(
       models.AccountModel,
       {
         _id: req.params.accountId,
       },
-      { userName: req.body.userName },
+      { username: req.body.username },
       { new: true, select: "-password -refreshToken" },
       { notAllowNull: true }
     );
@@ -55,7 +55,7 @@ const updateAccount = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
-  if (req.account.role == "admin" || req.account._id == req.params.accountId) {
+  if (req.account.role == "ADMIN" || req.account._id == req.params.accountId) {
     let account = await DbService.findOne(
       models.AccountModel,
       { _id: req.params.accountId },
@@ -63,13 +63,13 @@ const deleteAccount = async (req, res) => {
       { excludeFields: "-password", notAllowNull: true }
     );
 
-    if (account.role == "admin") {
+    if (account.role == "ADMIN") {
       throw new ApiError(400, "Can not delete admin account");
     }
 
     await account.deleteOne();
 
-    return res.status(200).json(account);
+    return res.status(200).json("Delete successful");
   } else {
     throw new ApiError(403, "Not authorized");
   }
@@ -77,17 +77,10 @@ const deleteAccount = async (req, res) => {
 
 const addAccount = async (req, res) => {
   let username = await models.AccountModel.findOne({
-    userName: req.body.userName,
+    username: req.body.username,
   });
   if (username) {
     throw new ApiError(400, "username already exists");
-  }
-
-  let email = await models.AccountModel.findOne({
-    email: req.body.email,
-  });
-  if (email) {
-    throw new ApiError(400, "email already exists");
   }
 
   let hash = await AuthService.hashPassword(req.body.password);
@@ -95,13 +88,9 @@ const addAccount = async (req, res) => {
   let data = await models.AccountModel.create({
     ...req.body,
     password: hash,
-    role: "user",
   });
 
-  data = data.toObject();
-  delete data.password;
-
-  return res.status(200).json(data);
+  return res.status(200).json("Add successful");
 };
 
 module.exports = {

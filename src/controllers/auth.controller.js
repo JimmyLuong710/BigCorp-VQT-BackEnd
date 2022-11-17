@@ -1,34 +1,7 @@
 import ApiError from "../config/error.config";
 import models from "../models";
 import AuthService from "../services/AuthService";
-import DbService from "../services/DbService"
-
-const signUp = async (req, res) => {
-  let username = await models.AccountModel.findOne({
-    userName: req.body.userName,
-  });
-  if (username) {
-    throw new ApiError(400, "Username already exists");
-  }
-
-  let email = await models.AccountModel.findOne({
-    email: req.body.email,
-  });
-  if (email) {
-    throw new ApiError(400, "Email already exits");
-  }
-
-  let hash = await AuthService.hashPassword(req.body.password);
-  let account = await models.AccountModel.create({
-    ...req.body,
-    password: hash,
-  });
-
-  account = account.toObject();
-  delete account.password;
-
-  return res.status(200).json(account);
-};
+import DbService from "../services/DbService";
 
 const signIn = async (req, res) => {
   let account = await models.AccountModel.findOne({
@@ -111,7 +84,12 @@ const refreshToken = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
-  let account = await DbService.findOne(models.AccountModel,{ _id: req.account._id }, {}, {notAllowNull: true});
+  let account = await DbService.findOne(
+    models.AccountModel,
+    { _id: req.account._id },
+    {},
+    { notAllowNull: true }
+  );
   let validatedPassword = await AuthService.comparePassword(
     req.body.password,
     account.password
@@ -128,9 +106,8 @@ const changePassword = async (req, res) => {
 };
 
 module.exports = {
-  signUp,
   signIn,
   logOut,
   refreshToken,
-  changePassword
+  changePassword,
 };
