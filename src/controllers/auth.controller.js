@@ -2,13 +2,14 @@ import ApiError from "../config/error.config";
 import models from "../models";
 import AuthService from "../services/AuthService";
 import DbService from "../services/DbService";
+import httpStatus from "http-status"
 
 const signIn = async (req, res) => {
   let account = await models.AccountModel.findOne({
     $or: [{ userName: req.body.userName }, { email: req.body.userName }],
   });
   if (!account) {
-    throw new ApiError(400, "wrong username or password");
+    throw new ApiError(httpStatus.BAD_REQUEST, "wrong username or password");
   }
 
   let validatedPassword = await AuthService.comparePassword(
@@ -16,7 +17,7 @@ const signIn = async (req, res) => {
     account.password
   );
   if (!validatedPassword) {
-    throw new ApiError(400, "wrong username or password");
+    throw new ApiError(httpStatus.BAD_REQUEST, "wrong username or password");
   }
 
   let accessToken = await AuthService.createToken(
@@ -33,7 +34,7 @@ const signIn = async (req, res) => {
   account = account.toObject();
   delete account.password;
 
-  return res.status(200).json({
+  return res.json({
     ...account,
     accessToken: accessToken,
     refreshToken: refreshToken,
@@ -56,20 +57,20 @@ const logOut = async (req, res) => {
   account = account.toObject();
   delete account.password;
 
-  return res.status(200).json(account);
+  return res.json(account);
 };
 
 const refreshToken = async (req, res) => {
   let refreshToken = req.body.refreshToken;
   if (!refreshToken) {
-    throw new ApiError(403, "Not authenticated");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Not authenticated");
   }
 
   let refreshTokenInDb = await models.AccountModel.findOne({
     refreshToken: refreshToken,
   });
   if (!refreshTokenInDb) {
-    throw new ApiError(403, "Not authenticated");
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Not authenticated");
   }
 
   let decoded = await AuthService.verifyToken(refreshToken, "refreshToken");
@@ -78,7 +79,7 @@ const refreshToken = async (req, res) => {
     "accessToken"
   );
 
-  return res.status(200).json({
+  return res.json({
     accessToken: newAccessToken,
   });
 };
@@ -95,7 +96,7 @@ const changePassword = async (req, res) => {
     account.password
   );
   if (!validatedPassword) {
-    throw new ApiError(400, "wrong password");
+    throw new ApiError(httpStatus.BAD_REQUEST, "wrong password");
   }
 
   let hash = await AuthService.hashPassword(req.body.newPassword);

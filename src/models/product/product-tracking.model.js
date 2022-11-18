@@ -30,7 +30,7 @@ const schema = new mongoose.Schema(
           ],
         },
         date: Date,
-        problems: String,
+        note: String,
       },
     ],
     customer: {

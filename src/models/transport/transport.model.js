@@ -3,7 +3,12 @@ import paginate from "mongoose-paginate-v2";
 
 const schema = new mongoose.Schema(
   {
-    importedDate: Date,
+    requestedDate: Date,
+    handledDate: Date,
+    type: {
+      type: String,
+      enum: ["IMPORT", "EXPORT"]
+    },
     from: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
@@ -11,6 +16,15 @@ const schema = new mongoose.Schema(
     to: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "CANCELLED", "CONFIRMED"],
+      default: "PENDING"
+    },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
     },
     products: [
       {

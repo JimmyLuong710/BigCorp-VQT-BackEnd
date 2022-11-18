@@ -3,8 +3,16 @@ import paginate from "mongoose-paginate-v2";
 
 const schema = new mongoose.Schema(
   {
-    amountProducts: Number,
-    capacity: Number,
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch"
+    },
+    storeName: String,
+    amountProducts: {
+      type: Number,
+      default: 0
+    },
+    // capacity: Number,
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,

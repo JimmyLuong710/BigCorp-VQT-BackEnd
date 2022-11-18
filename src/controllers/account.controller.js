@@ -2,6 +2,7 @@ import ApiError from "../config/error.config";
 import models from "../models";
 import AuthService from "../services/AuthService";
 import DbService from "../services/DbService";
+import httpStatus from "http-status"
 
 const getAccounts = async (req, res) => {
   if (req.account.role !== "ADMIN") {
@@ -23,7 +24,7 @@ const getAccounts = async (req, res) => {
 
 const getAccount = async (req, res) => {
   if (req.account.role !== "ADMIN") {
-    throw new ApiError(403, "Not authorized");
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized");
   }
 
   let account = await DbService.findOne(
@@ -48,9 +49,9 @@ const updateAccount = async (req, res) => {
       { notAllowNull: true }
     );
 
-    return res.status(200).json(account);
+    return res.json(account);
   } else {
-    throw new ApiError(403, "Not authorized");
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized");
   }
 };
 
@@ -64,14 +65,14 @@ const deleteAccount = async (req, res) => {
     );
 
     if (account.role == "ADMIN") {
-      throw new ApiError(400, "Can not delete admin account");
+      throw new ApiError(httpStatus.BAD_REQUEST, "Can not delete admin account");
     }
 
     await account.deleteOne();
 
-    return res.status(200).json("Delete successful");
+    return res.json("Delete successful");
   } else {
-    throw new ApiError(403, "Not authorized");
+    throw new ApiError(httpStatus.FORBIDDEN, "Not authorized");
   }
 };
 
@@ -80,17 +81,17 @@ const addAccount = async (req, res) => {
     username: req.body.username,
   });
   if (username) {
-    throw new ApiError(400, "username already exists");
+    throw new ApiError(httpStatus.BAD_REQUEST, "username already exists");
   }
 
   let hash = await AuthService.hashPassword(req.body.password);
 
-  let data = await models.AccountModel.create({
+  await models.AccountModel.create({
     ...req.body,
     password: hash,
   });
 
-  return res.status(200).json("Add successful");
+  return res.json("Add successful");
 };
 
 module.exports = {

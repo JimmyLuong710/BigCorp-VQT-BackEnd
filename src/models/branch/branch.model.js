@@ -6,6 +6,7 @@ const schema = new mongoose.Schema(
     branchName: {
       type: String,
       required: true,
+      unique: true
     },
     branchType: {
       type: String,
@@ -19,11 +20,12 @@ const schema = new mongoose.Schema(
     code: {
       type: String,
       required: true,
+      unique: true
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
-      required: true,
+      required: true
     },
     members: {
       type: Number,
