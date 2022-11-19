@@ -3,14 +3,18 @@ import paginate from "mongoose-paginate-v2";
 
 const schema = new mongoose.Schema(
   {
-    model: String,
+    model: {
+      type: String,
+      unique: true
+    },
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product"
     },
     status: {
       type: String,
-      enum: ["RECYCLED", "UNDER_WARRANTY", "IS_USING", "IN_STOCK"]
+      enum: ["RECYCLED", "UNDER_WARRANTY", "IS_USING", "IN_STOCK"],
+      default: "IN_STOCK"
     },
     progress: [
       {
@@ -41,11 +45,11 @@ const schema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: "product-trackings",
+    collection: "product-instances",
   }
 );
 
 schema.plugin(paginate);
-const ProductTrackingModel = mongoose.model("ProductTracking", schema);
+const ProductInstanceModel = mongoose.model("ProductInstance", schema);
 
-module.exports = ProductTrackingModel;
+module.exports = ProductInstanceModel;

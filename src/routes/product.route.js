@@ -3,19 +3,26 @@ import uploadMiddleware from "../middlewares/upload.middleware";
 import express from "express";
 import {
   getProducts,
-  getProduct,
   addProduct,
-  updateProduct,
-  deleteProduct,
+  addProductLine,
+  getProductLines,
+  addProductInstance,
+  getProductInstances
 } from "../controllers/product.controller";
 require("express-async-errors");
 
 const productRouter = express.Router();
 
-productRouter.get("/:productId", getProduct);
-productRouter.get("/", getProducts);
-productRouter.post("/", authMiddleware, uploadMiddleware, addProduct);
-productRouter.put("/:productId", authMiddleware, uploadMiddleware, updateProduct);
-productRouter.delete("/:productId", authMiddleware, deleteProduct);
+// product
+productRouter.get("/:productLineId/products", getProducts);
+productRouter.post("/:productLineId/products", uploadMiddleware, addProduct);
+
+//product line
+productRouter.post('/', addProductLine)
+productRouter.get('/', getProductLines)
+
+//product instance
+productRouter.post('/products/:productId/instances', addProductInstance)
+productRouter.get('/products/:productId/instances', getProductInstances)
 
 module.exports = productRouter;

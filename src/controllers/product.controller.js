@@ -3,98 +3,48 @@ import models from "../models";
 import DbService from "../services/DbService";
 
 const addProduct = async (req, res) => {
-  if (req.account.role !== "admin") {
-    throw new ApiError(403, "Not authorized");
-  }
+  await DbService.findOne(models.ProductLineModel, { _id: req.params.productLineId }, {}, { notAllowNull: true });
+  await DbService.create(models.ProductModel, { ...req.body, productLine: req.params.productLineId });
 
-  let product = await DbService.create(models.ProductModel, req.body);
-
-  return res.json(product);
+  return res.json("Added product successfully");
 };
 
 const getProducts = async (req, res) => {
-  let filter = {
-    isDeleted: false,
-  };
-  if (req.query.key) {
-    filter.productName = new RegExp(req.query.key, "i");
-  }
-  if(req.query.type) {
-    filter.type = req.query.type;
-  }
-
-  let products = await DbService.findAndPaginate(
-    models.ProductModel,
-    filter,
-    {},
-    req
-  );
+  // if (req.query.key) {
+  //   filter.productName = new RegExp(req.query.key, "i");
+  // }
+  let products = await DbService.findAndPaginate(models.ProductModel, { productLine: req.params.productLineId }, {}, req);
 
   return res.json(products);
 };
 
-const getProduct = async (req, res) => {
-  let filter = {
-    _id: req.params.productId,
-    isDeleted: false,
-  };
-  let product = await DbService.findOne(
-    models.ProductModel,
-    filter,
-    {},
-    { notAllowNull: true }
-  );
-
-  return res.json(product);
+const addProductLine = async (req, res) => {
+  await DbService.create(models.ProductLineModel, req.body);
+  return res.json("Added product line successfully");
 };
 
-const updateProduct = async (req, res) => {
-  if (req.account.role != "admin") {
-    throw new ApiError(403, "Not authorized");
-  }
-  let filter = {
-    _id: req.params.productId,
-    isDeleted: false,
-  };
-
-  let product = await DbService.updateOne(
-    models.ProductModel,
-    filter,
-    req.body,
-    { new: true },
-    { notAllowNull: true }
-  );
-
-  return res.json(product);
+const getProductLines = async (req, res) => {
+  let productLines = await DbService.findAndPaginate(models.ProductLineModel, {}, {}, req);
+  return res.json(productLines);
 };
 
-const deleteProduct = async (req, res) => {
-  if (req.account.role != "admin") {
-    throw new ApiError(403, "Not authorized");
-  }
+const addProductInstance = async (req, res) => {
+  await DbService.findOne(models.ProductModel, { _id: req.params.productId }, {}, { notAllowNull: true });
+  await DbService.create(models.ProductInstanceModel, { ...req.body, product: req.params.productId });
 
-  let filter = {
-    _id: req.params.productId,
-    isDeleted: false,
-  };
+  return res.json("Added product instance successfully");
+};
 
-  let product = await DbService.findOne(
-    models.ProductModel,
-    filter,
-    {},
-    { notAllowNull: true }
-  );
-
-  product.isDeleted = true;
-  await product.save();
-
-  return res.json(product);
+const getProductInstances = async (req, res) => {
+  let instances = await DbService.findAndPaginate(models.ProductInstanceModel, { product: req.params.productId }, {}, req);
+  return res.json(instances);
 };
 
 module.exports = {
   addProduct,
   getProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
+  addProductLine,
+  getProductLines,
+  addProductInstance,
+  getProductInstances,
 };

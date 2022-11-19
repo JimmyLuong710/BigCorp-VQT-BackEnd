@@ -22,17 +22,14 @@ class DbService {
     }
   }
 
-  static async create(model, body) {
-    let data = await model.create(body);
+  static async create(model, docBody) {
+    let data = await model.create(docBody);
 
     return data;
   }
 
   static async findOne(model, filter, dbOptions = {}, extraOptions = {}) {
-    let data = await model
-      .findOne(filter, dbOptions)
-      .select(extraOptions.excludeFields)
-      .populate(extraOptions?.populate);
+    let data = await model.findOne(filter, dbOptions).select(extraOptions.excludeFields).populate(extraOptions?.populate);
 
     if (extraOptions.notAllowNull && !data) {
       throw new ApiError(400, "The resources does not exist");
@@ -42,9 +39,7 @@ class DbService {
   }
 
   static async find(model, filter, dbOptions, extraOptions = {}) {
-    let data = await model
-      .find(filter, dbOptions)
-      .select(extraOptions.excludeFields);
+    let data = await model.find(filter, dbOptions).select(extraOptions.excludeFields);
 
     if (extraOptions.notAllowNull && !data) {
       throw new ApiError(400, "The resources does not exist");
@@ -53,13 +48,7 @@ class DbService {
     return data;
   }
 
-  static async updateOne(
-    model,
-    filter,
-    body,
-    dbOptions = {},
-    extraOptions = {}
-  ) {
+  static async updateOne(model, filter, body, dbOptions = {}, extraOptions = {}) {
     let data = await model.findOneAndUpdate(filter, body, dbOptions);
 
     if (extraOptions.notAllowNull && !data) {
@@ -79,7 +68,7 @@ class DbService {
     return data;
   }
 
-  static async findAndPaginate(model, filter, dbOptions, req) {
+  static async findAndPaginate(model, filter = {}, dbOptions = {}, req) {
     let paginateOptions = {
       ...paginateDocsConfig.extractQueryFromRequest(req),
       ...dbOptions,

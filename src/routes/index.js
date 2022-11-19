@@ -11,7 +11,7 @@ const mainRouter = express.Router();
 
 mainRouter.use("/auth", authRouter);
 mainRouter.use("/accounts", authMiddleware, accountRouter);
-mainRouter.use("/products", productRouter);
+mainRouter.use("/product-lines", productRouter);
 mainRouter.use("/branches", branchRouter);
 mainRouter.use("/transports", transportRouter);
 

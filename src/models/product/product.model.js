@@ -7,29 +7,21 @@ const schema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
+      unique: true
     },
-    ram: {
-      slots: Number,
-      frequency: String,
-      amount: Number
-    },
-    hardDrive: {
-      type: String,
-      size: String,
-      slots: Number
-    },
+    ram: String,
+    hardDrive: String,
     cpu: String,
-    monitor: {
-      size: String,
-      resolution: String
-    },
+    monitor: String,
     weight: String,
     price: Number,
-    productLine: String,
     graphic: String,
-    origin: String,
     os: String,
     images: [String],
+    productLine: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ProductLine" 
+    },
     quantitySold: {
       type: Number,
       default: 0

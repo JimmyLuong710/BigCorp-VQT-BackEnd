@@ -5,7 +5,6 @@ require("express-async-errors");
 const transportRouter = express.Router();
 
 transportRouter.post('/', requestTransportGoods);
-transportRouter.put('/', handleTransportGoods)
-
+transportRouter.put('/:transportId', handleTransportGoods)
 
 module.exports = transportRouter;
