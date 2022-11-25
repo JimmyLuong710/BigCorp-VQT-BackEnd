@@ -28,14 +28,16 @@ const schema = new mongoose.Schema(
             "FIXED_ERROR",
             "WARRANTY_CENTER_TO_DISTRIBUTOR",
             "SOLD",
-            "RECYCLED",
             "GIVE_BACK_CUSTOMER",
             "SUMMON",
             "GIVE_NEW"
           ],
           type: String
         },
-        date: Date,
+        date: {
+          type: Date,
+          default: new Date()
+        },
         note: String,
       },
     ],

@@ -22,44 +22,53 @@ const getProducts = async (req, res) => {
 
   let storeFilter = {
     branch: req.account.branch,
-    isTempStore: req.query.tempStore ? true : false
-  }
-  let store = await DbService.findOne(models.StoreModel, storeFilter, {}, {notAllowNull: true})
+    isTempStore: req.query.tempStore ? true : false,
+  };
+  let store = await DbService.findOne(models.StoreModel, storeFilter, {}, { notAllowNull: true });
 
   // find all device in store and group them by product id
   let devices = await models.ProductInstanceModel.aggregate()
     .match({ _id: { $in: store.products } })
-    .group({ _id: "$product", count: { $count: {} }, "devices": {
-      $addToSet: {
-        model: "$model"
-      }
-    } })
+    .group({
+      _id: "$product",
+      count: { $count: {} },
+      devices: {
+        $addToSet: {
+          model: "$model",
+        },
+      },
+    })
     .lookup({ from: "products", localField: "_id", foreignField: "_id", as: "product" })
     .project({
-      product: { $arrayElemAt: [ "$product", 0 ] },
+      product: { $arrayElemAt: ["$product", 0] },
       count: 1,
       devices: 1,
-      _id: 0
-    })  
+      _id: 0,
+    });
 
-    return res.json(devices)
+  return res.json(devices);
 };
 
 const transportToStore = async (req, res) => {
   let trackingBody = {
     branch: req.account.branch,
     type: "IMPORTED",
-    products: req.body.products
+    ...req.body,
   };
 
   // update store in factory
   await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: true }, { $pull: { products: { $in: req.body.products } } });
-  await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: false }, { $push: { products: req.body.products } });
+
+  // update status of product
+  for (const product of req.body.products) {
+    await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: false }, { $push: { products: product } });
+    await DbService.updateOne(models.ProductInstanceModel, { _id: product }, { status: "IN_STOCK", $push: { progress: { action: "FACTORY_TO_STORE", note: req.body.note } } });
+  }
 
   // add to tracking factory model
   await DbService.create(models.BranchTrackingModel, trackingBody);
 
-  return res.json("Imported successfully")
+  return res.json("Imported successfully");
 };
 
 module.exports = {

@@ -33,6 +33,7 @@ const schema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: 'branch-trackings'
   }
 );
 
