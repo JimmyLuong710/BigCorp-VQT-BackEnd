@@ -14,6 +14,10 @@ const schema = new mongoose.Schema(
       trim: true,
       required: true
     },
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch"
+    },
     role: {
       type: String,
       enum: ["ADMIN", "WARRANTY", "DISTRIBUTOR", "PRODUCER"],

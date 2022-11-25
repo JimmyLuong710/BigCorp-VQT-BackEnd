@@ -6,7 +6,7 @@ import httpStatus from "http-status"
 
 const signIn = async (req, res) => {
   let account = await models.AccountModel.findOne({
-    $or: [{ userName: req.body.userName }, { email: req.body.userName }],
+    username: req.body.username
   });
   if (!account) {
     throw new ApiError(httpStatus.BAD_REQUEST, "wrong username or password");
@@ -15,7 +15,7 @@ const signIn = async (req, res) => {
   let validatedPassword = await AuthService.comparePassword(
     req.body.password,
     account.password
-  );
+  ); 
   if (!validatedPassword) {
     throw new ApiError(httpStatus.BAD_REQUEST, "wrong username or password");
   }

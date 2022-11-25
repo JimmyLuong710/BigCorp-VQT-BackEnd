@@ -3,26 +3,23 @@ import paginate from "mongoose-paginate-v2";
 
 const schema = new mongoose.Schema(
   {
-    requestedDate: Date,
-    handledDate: Date,
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+    },
     type: {
       type: String,
-      enum: ["IMPORT", "EXPORT"]
+      enum: ["IMPORTED", "EXPORTED", "SOLD", "FIXED"],
     },
-    from: {
+    partner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Branch",
     },
-    to: {
+    customer: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Branch",
+      ref: "Customer",
     },
-    status: {
-      type: String,
-      enum: ["PENDING", "CANCELLED", "CONFIRMED"],
-      default: "PENDING"
-    },
-    store: {
+    targetStore: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Store",
     },
@@ -32,7 +29,7 @@ const schema = new mongoose.Schema(
         ref: "ProductInstance",
       },
     ],
-    note: String
+    note: String,
   },
   {
     timestamps: true,
@@ -40,6 +37,6 @@ const schema = new mongoose.Schema(
 );
 
 schema.plugin(paginate);
-const TransportModel = mongoose.model("Transport", schema);
+const BranchTrackingModel = mongoose.model("BranchTracking", schema);
 
-module.exports = TransportModel;
+module.exports = BranchTrackingModel;

@@ -13,8 +13,8 @@ const schema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["RECYCLED", "UNDER_WARRANTY", "IS_USING", "IN_STOCK"],
-      default: "IN_STOCK"
+      enum: ["FAILED", "UNDER_WARRANTY", "FIXED_ERROR", "IS_USING", "IN_STOCK", "IDLE"],
+      default: "IDLE"
     },
     progress: [
       {
@@ -24,14 +24,16 @@ const schema = new mongoose.Schema(
             "FACTORY_TO_DISTRIBUTOR",
             "WARRANTY_CENTER_TO_FACTORY",
             "DISTRIBUTOR_TO_WARRANTY_CENTER",
+            "UNDER_WARRANTY",
+            "FIXED_ERROR",
             "WARRANTY_CENTER_TO_DISTRIBUTOR",
             "SOLD",
             "RECYCLED",
             "GIVE_BACK_CUSTOMER",
-            "UNDER_WARRANTY",
             "SUMMON",
             "GIVE_NEW"
           ],
+          type: String
         },
         date: Date,
         note: String,
@@ -40,6 +42,10 @@ const schema = new mongoose.Schema(
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
+    },
+    producedDate: {
+      type: Date,
+      default: new Date()
     },
     dueDate: Date,
   },

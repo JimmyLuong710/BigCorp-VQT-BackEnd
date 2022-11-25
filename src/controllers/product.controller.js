@@ -28,23 +28,9 @@ const getProductLines = async (req, res) => {
   return res.json(productLines);
 };
 
-const addProductInstance = async (req, res) => {
-  await DbService.findOne(models.ProductModel, { _id: req.params.productId }, {}, { notAllowNull: true });
-  await DbService.create(models.ProductInstanceModel, { ...req.body, product: req.params.productId });
-
-  return res.json("Added product instance successfully");
-};
-
-const getProductInstances = async (req, res) => {
-  let instances = await DbService.findAndPaginate(models.ProductInstanceModel, { product: req.params.productId }, {}, req);
-  return res.json(instances);
-};
-
 module.exports = {
   addProduct,
   getProducts,
   addProductLine,
   getProductLines,
-  addProductInstance,
-  getProductInstances,
 };

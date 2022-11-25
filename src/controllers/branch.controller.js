@@ -4,11 +4,15 @@ import DbService from "../services/DbService";
 import httpStatus from "http-status";
 
 const addBranch = async (req, res) => {
+    if(req.account.role !== "ADMIN") throw new ApiError(httpStatus.FORBIDDEN, "Not authorized")
+
     await DbService.create(models.BranchModel, req.body)
     return res.json("Added branch successfully")
 }
 
 const getBranches = async (req, res) => {
+    if(req.account.role !== "ADMIN") throw new ApiError(httpStatus.FORBIDDEN, "Not authorized")
+    
     let branches = await DbService.findAndPaginate(models.BranchModel, {}, {}, req)
     return res.json(branches)
 }

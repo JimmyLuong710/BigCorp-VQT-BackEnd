@@ -6,6 +6,7 @@ import ProductLineModel from "./product/product-line.model"
 import ProductInstanceModel from "./product/product-instance.model"
 import BranchModel from "./branch/branch.model";
 import StoreModel from "./branch/store.model";
+import BranchTrackingModel from "./branch-tracking/branch-tracking.model"
 import TransportModel from "./transport/transport.model"
 
 module.exports = {
@@ -13,6 +14,7 @@ module.exports = {
   CustomerModel,
   BranchModel,
   StoreModel,
+  BranchTrackingModel,
   OrderModel,
   ProductModel,
   ProductLineModel,

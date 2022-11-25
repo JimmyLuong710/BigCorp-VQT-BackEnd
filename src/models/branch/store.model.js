@@ -8,11 +8,10 @@ const schema = new mongoose.Schema(
       ref: "Branch"
     },
     storeName: String,
-    amountProducts: {
-      type: Number,
-      default: 0
+    isTempStore: {
+      type: Boolean,
+      default: false
     },
-    // capacity: Number,
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,

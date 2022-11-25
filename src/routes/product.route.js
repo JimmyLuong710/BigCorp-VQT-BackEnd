@@ -5,9 +5,7 @@ import {
   getProducts,
   addProduct,
   addProductLine,
-  getProductLines,
-  addProductInstance,
-  getProductInstances
+  getProductLines
 } from "../controllers/product.controller";
 require("express-async-errors");
 
@@ -20,9 +18,5 @@ productRouter.post("/:productLineId/products", uploadMiddleware, addProduct);
 //product line
 productRouter.post('/', addProductLine)
 productRouter.get('/', getProductLines)
-
-//product instance
-productRouter.post('/products/:productId/instances', addProductInstance)
-productRouter.get('/products/:productId/instances', getProductInstances)
 
 module.exports = productRouter;
