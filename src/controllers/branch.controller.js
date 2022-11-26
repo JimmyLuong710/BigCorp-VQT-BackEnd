@@ -17,29 +17,19 @@ const getBranches = async (req, res) => {
     return res.json(branches)
 }
 
-const getBranch = async (req, res) => {
-    
-}
-
-const updateBranch = async (req, res) => {
-    
-}
-
-const deleteBranch = async (req, res) => {
-    
-}
 
 const addStore = async (req, res) => {
-    let store = await DbService.create(models.StoreModel, {...req.body, branch: req.params.branchId})
-    await DbService.updateOne(models.BranchModel, {_id: req.params.branchId}, {$push: {stores: store._id}})
+    let isStoreExist = await DbService.findOne(models.StoreModel, {branch: req.params.branchId}) 
+    if(isStoreExist) throw new ApiError(httpStatus.BAD_REQUEST, "Store already exists")
+
+    await DbService.create(models.StoreModel, {...req.body, branch: req.params.branchId})
+    // await DbService.updateOne(models.BranchModel, {_id: req.params.branchId}, {$push: {stores: store._id}})
+    
     return res.json("Added store successfully")
 }
 
 module.exports = {
     addBranch, 
     getBranches,
-    getBranch,
-    updateBranch,
-    deleteBranch,
     addStore
 }

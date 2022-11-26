@@ -59,7 +59,7 @@ const transportToStore = async (req, res) => {
   // update store in factory
   await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: true }, { $pull: { products: { $in: req.body.products } } });
 
-  // update status of product
+  // update status of product instance
   for (const product of req.body.products) {
     await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: false }, { $push: { products: product } });
     await DbService.updateOne(models.ProductInstanceModel, { _id: product }, { status: "IN_STOCK", $push: { progress: { action: "FACTORY_TO_STORE", note: req.body.note } } });

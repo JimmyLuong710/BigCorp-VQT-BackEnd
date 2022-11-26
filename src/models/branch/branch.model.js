@@ -30,11 +30,7 @@ const schema = new mongoose.Schema(
     members: {
       type: Number,
       required: true,
-    },
-    stores: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Store"
-    }]
+    }
   },
   {
     timestamps: true,

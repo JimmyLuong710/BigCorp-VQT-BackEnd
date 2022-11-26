@@ -1,7 +1,5 @@
 import DbService from "../services/DbService";
-import ApiError from "../config/error.config";
 import models from "../models";
-import httpStatus from "http-status";
 
 const requestTransportGoods = async (req, res) => {
   // const branchFrom = await DbService.findOne(models.BranchModel, { _id: req.body.from }, {}, { notAllowNull: true });
@@ -12,29 +10,37 @@ const requestTransportGoods = async (req, res) => {
 
   await DbService.create(models.TransportModel, req.body);
 
-  return res.json("Requested to import goods");
+  return res.json("Requested successfully");
 };
 
 const handleTransportGoods = async (req, res) => {
   if (req.body.status !== "CONFIRMED") return res.json("Cancelled transportation");
 
-  let transport = await DbService.updateOne(models.TransportModel, { _id: req.params.transportId }, { status: req.body.status }, { new: true }, { notAllowNull: true });
+  let transport = await DbService.updateOne(
+    models.TransportModel,
+    { _id: req.params.transportId },
+    { status: req.body.status, handledDate: new Date() },
+    { new: true },
+    { notAllowNull: true }
+  );
   const branchFrom = await DbService.findOne(models.BranchModel, { _id: transport.from }, {});
-  const branchTo = await DbService.findOne(models.BranchModel, { _id: transport.to }, {}, { notAllowNull: true });
+  const branchTo = await DbService.findOne(models.BranchModel, { _id: transport.to }, {}, {});
 
-  await DbService.updateOne(models.StoreModel, { _id: transport.store }, { $push: { products: transport.products } }, {}, { notAllowNull: true });
+  await DbService.updateOne(models.StoreModel, { branch: branchFrom._id, isTempStore: false }, { $pull: { products: { $in: transport.products } } });
+  await DbService.updateOne(models.StoreModel, { branch: branchTo._id, isTempStore: false }, { $push: { products: transport.products } });
 
+  // determine status and add progress of product when finish import goods
   let productProgress = {
-    action: transport.from.toString() === transport.to.toString() ? "FACTORY_TO_STORE" : branchFrom.branchType + "_TO_" + branchTo.branchType,
-    date: new Date(),
+    action: branchFrom.branchType + "_TO_" + branchTo.branchType,
     note: transport.note,
   };
-
-  // determine status of product when finish import goods
   let productStatus;
   switch (branchTo.type) {
     case "WARRANTY_CENTER":
-      productStatus = "UNDER_WARRANTY";
+      productStatus = "FAILED";
+      break;
+    case "FACTORY":
+      productStatus = "FAILED";
       break;
     default:
       productStatus = "IN_STOCK";
@@ -46,41 +52,39 @@ const handleTransportGoods = async (req, res) => {
     console.log(productId);
     await DbService.updateOne(models.ProductInstanceModel, { _id: productId }, { status: productStatus, $push: { progress: productProgress } });
   }
-  return res.json("Transported goods");
-};
 
-const handleExportGoods = async (req, res) => {
-  if (req.status !== "CONFIRM") return res.json("Cancelled transportation");
-
-  let transport = await DbService.findOne(models.TransportModel, { _id: req.params.transportId });
-  const branchFrom = await DbService.findOne(models.BranchModel, { _id: transport.body.from }, {});
-  const branchTo = await DbService.findOne(models.BranchModel, { _id: transport.to }, {}, { notAllowNull: true });
-
-  let productProgress = {
-    action: branchFrom.type + "_TO_" + branchTo.type,
-    date: new Date(),
+  // add to tracking branch
+  let trackingBody = {
+    products: transport.products,
     note: transport.note,
   };
+  await DbService.create(models.BranchTrackingModel, { ...trackingBody, branch: branchFrom._id, type: "EXPORTED"});
+  await DbService.create(models.BranchTrackingModel, { ...trackingBody, branch: branchTo._id, type: "IMPORTED" });
 
-  // determine status of product when finish import goods
-  let productStatus;
-  switch (branchTo.type) {
-    case "WARRANTY_CENTER":
-      productStatus = "UNDER_WARRANTY";
-      break;
-    default:
-      productStatus = "IN_STOCK";
-  }
-
-  // update status of product
-  for (let productId of req.body.products) {
-    await DbService.updateOne(models.ProductTrackingModel, { _id: productId }, { status: productStatus, progress: productProgress });
-  }
-
-  return res.json("Exported goods");
+  return res.json("Transported goods successfully");
 };
+
+const getTransports = async (req, res) => {
+ const filter = {
+  status: req.query.status ? req.query.status : 'PENDING',
+  $or: [
+    {
+      tye: "IMPORT",
+      to: req.account.branch
+    },
+    {
+      tye: "EXPORT",
+      from: req.account.branch
+    }
+  ]
+ }
+  const reqTransports = await DbService.findAndPaginate(models.TransportModel, filter, {populate: ["from", "to"]}, req)
+
+  return res.json(reqTransports)
+}
 
 module.exports = {
   requestTransportGoods,
   handleTransportGoods,
+  getTransports
 };

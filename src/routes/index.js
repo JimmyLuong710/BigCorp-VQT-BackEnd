@@ -6,6 +6,7 @@ import branchRouter from "./branch.route";
 import authMiddleware from "../middlewares/auth.middleware";
 import transportRouter from "./transport.route";
 import factoryRouter from "./factory.route";
+import distributorRouter from "./distributor.route";
 import customerRouter from "./customer.route";
 require("express-async-errors");
 
@@ -18,8 +19,9 @@ mainRouter.use("/auth", authRouter);
 mainRouter.use("/accounts", authMiddleware, accountRouter);
 mainRouter.use("/product-lines", productRouter);
 mainRouter.use("/branches", authMiddleware, branchRouter);
-mainRouter.use("/transports", transportRouter);
+mainRouter.use("/transports", authMiddleware, transportRouter);
 mainRouter.use("/factory", authMiddleware, factoryRouter);
+mainRouter.use("/distributor", authMiddleware, distributorRouter);
 mainRouter.use("/customers", authMiddleware, customerRouter);
 
 mainRouter.get("/test", async (req, res) => {
@@ -42,7 +44,7 @@ mainRouter.get("/test", async (req, res) => {
       devices: 1,
       _id: 0,
     });
- 
+
   res.json(data);
 });
 

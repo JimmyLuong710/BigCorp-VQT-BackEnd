@@ -22,10 +22,6 @@ const schema = new mongoose.Schema(
       enum: ["PENDING", "CANCELLED", "CONFIRMED"],
       default: "PENDING"
     },
-    store: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Store",
-    },
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
