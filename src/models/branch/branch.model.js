@@ -2,39 +2,42 @@ import mongoose from "mongoose";
 import paginate from "mongoose-paginate-v2";
 
 const schema = new mongoose.Schema(
-  {
-    branchName: {
-      type: String,
-      required: true,
-      unique: true
+    {
+        branchName: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        branchType: {
+            type: String,
+            enum: ["FACTORY", "DISTRIBUTOR", "WARRANTY_CENTER"],
+            required: true,
+        },
+        address: {
+            type: String,
+            required: true,
+        },
+        code: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Account",
+            required: true
+        },
+        phone: {
+            type: String,
+        },
+        members: {
+            type: Number,
+            required: true,
+        }
     },
-    branchType: {
-      type: String,
-      enum: ["FACTORY", "DISTRIBUTOR", "WARRANTY_CENTER"],
-      required: true,
-    },
-    address: {
-      type: String,
-      required: true,
-    },
-    code: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Account",
-      required: true
-    },
-    members: {
-      type: Number,
-      required: true,
+    {
+        timestamps: true,
     }
-  },
-  {
-    timestamps: true,
-  }
 );
 
 schema.plugin(paginate);

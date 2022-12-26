@@ -12,17 +12,19 @@ require("express-async-errors");
 
 import models from "../models";
 import mongoose from "mongoose";
+import adminRouter from "./admin.router";
 
 const mainRouter = express.Router();
 
 mainRouter.use("/auth", authRouter);
-mainRouter.use("/accounts", authMiddleware, accountRouter);
+mainRouter.use("/accounts", authMiddleware(), accountRouter);
 mainRouter.use("/product-lines", productRouter);
-mainRouter.use("/branches", authMiddleware, branchRouter);
-mainRouter.use("/transports", authMiddleware, transportRouter);
-mainRouter.use("/factory", authMiddleware, factoryRouter);
-mainRouter.use("/distributor", authMiddleware, distributorRouter);
-mainRouter.use("/customers", authMiddleware, customerRouter);
+mainRouter.use("/branches", authMiddleware(), branchRouter);
+mainRouter.use("/transports", authMiddleware(), transportRouter);
+mainRouter.use("/factory", authMiddleware(), factoryRouter);
+mainRouter.use("/distributor", authMiddleware(['DISTRIBUTOR']), distributorRouter);
+mainRouter.use("/customers", authMiddleware(), customerRouter);
+mainRouter.use("/admin",authMiddleware(['ADMIN']), adminRouter)
 
 mainRouter.get("/test", async (req, res) => {
   let store = await models.StoreModel.findOne({ _id: "637e663daed32de6803c390b" });

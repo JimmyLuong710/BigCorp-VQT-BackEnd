@@ -11,12 +11,14 @@ const addBranch = async (req, res) => {
 }
 
 const getBranches = async (req, res) => {
-    if(req.account.role !== "ADMIN") throw new ApiError(httpStatus.FORBIDDEN, "Not authorized")
-    
-    let branches = await DbService.findAndPaginate(models.BranchModel, {}, {}, req)
+    let branches = await DbService.find(models.BranchModel, {branchType: req.query.branchType}, {}, {populate: 'owner'})
     return res.json(branches)
 }
 
+const getBranch = async (req, res) => {
+    const branch = await DbService.findOne(models.BranchModel, {_id: req.params.branchId})
+    return res.json(branch)
+}
 
 const addStore = async (req, res) => {
     let isStoreExist = await DbService.findOne(models.StoreModel, {branch: req.params.branchId}) 
@@ -31,5 +33,6 @@ const addStore = async (req, res) => {
 module.exports = {
     addBranch, 
     getBranches,
-    addStore
+    addStore,
+    getBranch
 }

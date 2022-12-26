@@ -5,7 +5,7 @@ import { produceProduct, getProducts, transportToStore } from '../controllers/fa
 const factoryRouter = express.Router()
 
 factoryRouter.get("/products/instances", getProducts)
-factoryRouter.post("/products/:productId/instances", produceProduct)
+factoryRouter.post("/products/instances", produceProduct)
 factoryRouter.post("/products/transport-to-store", transportToStore)
 
 export default factoryRouter

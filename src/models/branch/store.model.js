@@ -15,7 +15,7 @@ const schema = new mongoose.Schema(
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ProductTracking",
+        ref: "ProductInstance",
       },
     ],
   },

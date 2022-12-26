@@ -9,7 +9,7 @@ const schema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["IMPORTED", "EXPORTED", "SOLD", "FIXED"],
+      enum: ["IMPORTED", "EXPORTED", "SOLD", "FIXED", "PRODUCED"],
     },
     partner: {
       type: mongoose.Schema.Types.ObjectId,

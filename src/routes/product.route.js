@@ -12,8 +12,8 @@ require("express-async-errors");
 const productRouter = express.Router();
 
 // product
-productRouter.get("/:productLineId/products", getProducts);
-productRouter.post("/:productLineId/products", uploadMiddleware, addProduct);
+productRouter.get("/products", getProducts);
+productRouter.post("/products", uploadMiddleware, addProduct);
 
 //product line
 productRouter.post('/', addProductLine)

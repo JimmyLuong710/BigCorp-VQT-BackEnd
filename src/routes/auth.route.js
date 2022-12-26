@@ -11,7 +11,7 @@ require("express-async-errors");
 const authRouter = express.Router();
 
 authRouter.post("/sign-in", signIn);
-authRouter.post("/log-out", authMiddleware, logOut);
+authRouter.post("/log-out", authMiddleware(), logOut);
 authRouter.post("/refresh-token", refreshToken);
 authRouter.post("/change-password", authMiddleware, changePassword);
 

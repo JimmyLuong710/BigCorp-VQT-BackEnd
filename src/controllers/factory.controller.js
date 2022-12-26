@@ -4,75 +4,86 @@ import httpStatus from "http-status";
 import ApiError from "../config/error.config";
 
 const produceProduct = async (req, res) => {
-  if (!req.account?.branch || req.account?.role !== "PRODUCER") throw new ApiError(httpStatus.FORBIDDEN, "Not authorized");
 
-  let filter = {
-    branch: req.account.branch,
-    isTempStore: true,
-  };
+    let filter = {
+        branch: req.account.branch,
+        isTempStore: true,
+    };
 
-  let device = await DbService.create(models.ProductInstanceModel, { product: req.params.productId, ...req.body });
-  await DbService.updateOne(models.StoreModel, filter, { $push: { products: device._id } }, { upsert: true });
+    let devices = []
+    for (let i = 0; i < req.body.quantity; i++) {
+        devices.push({
+            model: ((Math.random() + 1).toString(36).substring(8)) + '-' + Math.round(((Math.random() + 1) * 1000)),
+            product: req.body.product
+        })
+    }
 
-  return res.json("Produced product successfully");
+    devices = (await DbService.insertMany(models.ProductInstanceModel, devices)).map((device, id) => device._id)
+    await DbService.updateOne(models.StoreModel, filter, {$push: {products: devices}}, {upsert: true});
+    await DbService.create(models.BranchTrackingModel, {
+        branch: req.account.branch,
+        products: devices,
+        type: 'PRODUCED',
+        note: req.body.note
+    })
+
+    return res.json("Produced product successfully");
 };
 
 const getProducts = async (req, res) => {
-  if (!req.account?.branch || req.account?.role !== "PRODUCER") throw new ApiError(httpStatus.FORBIDDEN, "Not authorized");
+    let storeFilter = {
+        branch: req.account.branch,
+        isTempStore: req.query.tempStore ? true : false,
+    };
 
-  let storeFilter = {
-    branch: req.account.branch,
-    isTempStore: req.query.tempStore ? true : false,
-  };
-  let store = await DbService.findOne(models.StoreModel, storeFilter, {}, { notAllowNull: true });
-
-  // find all device in store and group them by product id
-  let devices = await models.ProductInstanceModel.aggregate()
-    .match({ _id: { $in: store.products } })
-    .group({
-      _id: "$product",
-      count: { $count: {} },
-      devices: {
-        $addToSet: {
-          model: "$model",
-        },
-      },
+    const store = await models.StoreModel.findOne(storeFilter).select({products: 1}).populate({
+        path: 'products',
+        select: 'product producedDate model',
+        populate: {
+            path: 'product',
+            select: 'productName',
+            model: 'Product'
+        }
     })
-    .lookup({ from: "products", localField: "_id", foreignField: "_id", as: "product" })
-    .project({
-      product: { $arrayElemAt: ["$product", 0] },
-      count: 1,
-      devices: 1,
-      _id: 0,
-    });
-
-  return res.json(devices);
+   console.log(store)
+    return res.json(store.products);
 };
 
 const transportToStore = async (req, res) => {
-  let trackingBody = {
-    branch: req.account.branch,
-    type: "IMPORTED",
-    ...req.body,
-  };
+    let trackingBody = {
+        branch: req.account.branch,
+        products: req.body.products,
+        type: "IMPORTED",
+        note: req.body.note,
+    };
+    console.log(req.body)
+    // update store in factory
+    await DbService.updateOne(models.StoreModel, {
+        branch: req.account.branch,
+        isTempStore: true
+    }, {$pull: {products: {$in: req.body.products}}});
 
-  // update store in factory
-  await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: true }, { $pull: { products: { $in: req.body.products } } });
+    const store = await DbService.updateOne(models.StoreModel, {
+        branch: req.account.branch,
+        isTempStore: false
+    }, {$push: {products: req.body.products}});
+    // update status of product instance
+    for (const product of req.body.products) {
+        await DbService.updateOne(models.ProductInstanceModel, {_id: product}, {
+            status: "IN_STOCK",
+            store: store._id,
+            $push: {progress: {action: "FACTORY_TO_STORE", note: req.body.note, location: req.account.branch}}
+        });
+    }
 
-  // update status of product instance
-  for (const product of req.body.products) {
-    await DbService.updateOne(models.StoreModel, { branch: req.account.branch, isTempStore: false }, { $push: { products: product } });
-    await DbService.updateOne(models.ProductInstanceModel, { _id: product }, { status: "IN_STOCK", $push: { progress: { action: "FACTORY_TO_STORE", note: req.body.note } } });
-  }
+    // add to tracking factory model
+    await DbService.create(models.BranchTrackingModel, trackingBody);
 
-  // add to tracking factory model
-  await DbService.create(models.BranchTrackingModel, trackingBody);
-
-  return res.json("Imported successfully");
+    return res.json("Imported successfully");
 };
 
 module.exports = {
-  produceProduct,
-  getProducts,
-  transportToStore,
+    produceProduct,
+    getProducts,
+    transportToStore,
 };
