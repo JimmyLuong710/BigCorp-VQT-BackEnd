@@ -1,4 +1,3 @@
-import ApiError from "../config/error.config";
 import models from "../models";
 import DbService from "../services/DbService";
 
@@ -32,7 +31,7 @@ const getProductLines = async (req, res) => {
 
 const getProductInstances = async (req, res) => {
     let filter = req.query.model ? {model: new RegExp(req.query.model, "i")} : {}
-    if(req.query.status) filter.status = req.query.status
+    if (req.query.status) filter.status = req.query.status
     let instances = await DbService.find(models.ProductInstanceModel, filter, {}, {
         excludeFields: '-progress',
         lean: true,
@@ -57,22 +56,32 @@ const getProductInstances = async (req, res) => {
 
 const getInstancesByBranchId = async (req, res) => {
     const filter = {
-       branch: req.params.branchId,
+        branch: req.params.branchId,
         isTempStore: false
     }
+    let statuses = req.query.status ? (Array.isArray(req.query.status) ? req.query.status : [req.query.status]) : []
     const store = await models.StoreModel.findOne(filter).select({products: 1}).populate({
         path: 'products',
-        select: 'product producedDate model status',
+        select: 'product producedDate model status createdAt updatedAt',
         populate: {
             path: 'product',
-            select: 'productName',
+            select: 'productName price',
             model: 'Product'
         }
-    })
-    let products = store?.products
-    if(req.query.status) products = products.filter((product) => {
-        return product.status == req.query.status
-    })
+    }).lean()
+
+    let products = store.products
+    if(req.query.model) {
+        products = products.filter(product => product.model.includes(req.query.model))
+    }
+    if (statuses.length > 0) {
+        products = products.filter(product => {
+            for (let status of statuses) {
+                if (product.status == status) return true
+            }
+            return false
+        })
+    }
 
     return res.json(products);
 }

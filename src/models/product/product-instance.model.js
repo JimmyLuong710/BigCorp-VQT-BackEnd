@@ -16,12 +16,14 @@ const schema = new mongoose.Schema(
             enum: [
                 'NEWLY_PRODUCED',
                 'IMPORTED_STORE',
-                'TAKE_TO_DISTRIBUTOR',
+                'TAKE_TO_DISTRIBUTOR_BY_FACTORY',
+                'TAKE_TO_DISTRIBUTOR_BY_WARRANTY_CENTER',
                 'SOLD',
-                'FAILED_NEED_TO_WARRANTY',
+                'FAILED_NEED_TO_WARRANTY_CENTER',
+                'TAKE_FAILED_TO_WARRANTY_CENTER',
                 "UNDER_WARRANTY",
                 "WARRANTY_DONE",
-                'WARRANTY_RETURNED_TO_CUSTOMER',
+                'DISTRIBUTOR_RETURNED_TO_CUSTOMER',
                 "FAILED_NEED_TO_FACTORY",
                 "FAILED_SENT_TO_FACTORY",
                 "FAILED_NEED_TO_SUMMON",
@@ -43,12 +45,14 @@ const schema = new mongoose.Schema(
                     enum: [
                         'NEWLY_PRODUCED',
                         'IMPORTED_STORE',
-                        'TAKE_TO_DISTRIBUTOR',
+                        'TAKE_TO_DISTRIBUTOR_BY_FACTORY',
+                        'TAKE_TO_DISTRIBUTOR_BY_WARRANTY_CENTER',
                         'SOLD',
                         'FAILED_NEED_TO_WARRANTY',
+                        'TAKE_FAILED_TO_WARRANTY_CENTER',
                         "UNDER_WARRANTY",
                         "WARRANTY_DONE",
-                        'WARRANTY_RETURNED_TO_CUSTOMER',
+                        'DISTRIBUTOR_RETURNED_TO_CUSTOMER',
                         "FAILED_NEED_TO_FACTORY",
                         "FAILED_SENT_TO_FACTORY",
                         "FAILED_NEED_TO_SUMMON",
@@ -87,3 +91,4 @@ schema.plugin(paginate);
 const ProductInstanceModel = mongoose.model("ProductInstance", schema);
 
 module.exports = ProductInstanceModel;
+

@@ -14,7 +14,13 @@ const schema = new mongoose.Schema(
         handledDate: Date,
         type: {
             type: String,
-            enum: ["IMPORT", "EXPORT"]
+            enum: [
+                'TAKE_TO_DISTRIBUTOR_BY_FACTORY',
+                'TAKE_TO_DISTRIBUTOR_BY_WARRANTY_CENTER',
+                'FAILED_NEED_TO_WARRANTY',
+                "FAILED_SENT_TO_FACTORY",
+                "RETURNED_TO_FACTORY"
+            ],
         },
         from: {
             type: mongoose.Schema.Types.ObjectId,

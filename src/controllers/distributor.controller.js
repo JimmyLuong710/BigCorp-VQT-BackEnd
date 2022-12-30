@@ -3,14 +3,13 @@ import models from "../models";
 import httpStatus from "http-status";
 
 const sellProducts = async (req, res) => {
-
     // make a transaction
     await DbService.updateOne(models.StoreModel, {branch: req.account.branch}, {$pull: {products: {$in: req.body.products}}}, {}, {notAllowNull: true});
     const customerBody = req.body.products?.map(product => ({
         branch: req.account.branch,
         product: product
     }))
-    await DbService.updateOne(models.CustomerModel, {_id: req.body.customerId}, {$push: {products: customerBody}}, {}, {notAllowNull: true});
+    await DbService.updateOne(models.CustomerModel, {code: req.body.customerTag}, {$push: {products: customerBody}}, {}, {notAllowNull: true});
 
     // add to tracking distributor
     const trackingBody = {

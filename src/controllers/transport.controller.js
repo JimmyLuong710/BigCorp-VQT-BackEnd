@@ -70,15 +70,16 @@ const handleTransportGoods = async (req, res) => {
 };
 
 const getTransports = async (req, res) => {
+
     const filter = {
-        ...req.query,
+        status: {
+            $in: req.query.status ? (Array.isArray(req.query.status) ? req.query.status : [req.query.status]) : ['PENDING', 'CANCELLED', 'CONFIRMED']
+        },
         $or: [
             {
-                tye: "IMPORT",
                 to: req.account.branch
             },
             {
-                tye: "EXPORT",
                 from: req.account.branch
             }
         ]
@@ -101,8 +102,32 @@ const getTransports = async (req, res) => {
     return res.json(reqTransports)
 }
 
+const getTransportsToHandle = async (req, res) => {
+    let filter = {
+        status: 'PENDING',
+        to: req.account.branch
+    }
+    const reqTransports = await DbService.find(models.TransportModel, filter, {}, {
+        populate: [{
+            path: 'from',
+            select: 'branchName'
+        }, {
+            path: 'to',
+            select: 'branchName'
+        }, {
+            path: 'products',
+            populate: {
+                path: 'product',
+                select: 'productName'
+            }
+        }]
+    })
+    return res.json(reqTransports)
+}
+
 module.exports = {
     requestTransportGoods,
     handleTransportGoods,
-    getTransports
+    getTransports,
+    getTransportsToHandle
 };

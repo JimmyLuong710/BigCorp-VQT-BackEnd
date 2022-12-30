@@ -87,7 +87,10 @@ const transportToStore = async (req, res) => {
 };
 
 const handleOrder = async (req, res) => {
-    let transport = await DbService.updateOne(models.TransportModel, {_id: req.params.transportId},{status: req.body.status},{}, {} )
+    let transport = await DbService.updateOne(models.TransportModel, {_id: req.body.transportId},{status: req.body.status},{new: true}, {} )
+    let branch = await DbService.findOne(models.BranchModel, {_id: transport.from})
+    if(req.body.status !== 'CONFIRMED') return res.json('Cancelled successfully')
+
     await DbService.create(models.BranchTrackingModel, {
         branch: req.branch,
         type: 'IMPORTED',
@@ -96,6 +99,29 @@ const handleOrder = async (req, res) => {
         handleType: req.body.status,
         note: transport.note
     })
+
+    // update store in both branch
+    await DbService.updateOne(models.StoreModel, {
+        branch: branch.branchType === 'DISTRIBUTOR' ? transport.to : transport.from,
+        isTempStore: false
+    }, {$pull: {products: {$in: transport.products}}});
+    await DbService.updateOne(models.StoreModel, {
+        branch:  branch.branchType === 'DISTRIBUTOR' ? transport.from : transport.to,
+        isTempStore: false
+    }, {$push: {products: transport.products}});
+
+    // determine status and add progress of product when finish import products
+    let productProgress = {
+        action: transport.type,
+        location: req.branch
+    };
+    for (let productId of transport.products) {
+        await DbService.updateOne(models.ProductInstanceModel, {_id: productId}, {
+            branch: branch.branchType === 'DISTRIBUTOR' ? transport.from : transport.to,
+            status: transport.type,
+            $push: {progress: productProgress}
+        });
+    }
 
     return res.json('Handled successfully')
 }
