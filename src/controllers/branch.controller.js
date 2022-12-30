@@ -4,7 +4,8 @@ import DbService from "../services/DbService";
 import httpStatus from "http-status";
 
 const addBranch = async (req, res) => {
-    let branch = await DbService.create(models.BranchModel, req.body)
+    let code = 'BR' + Math.round(((Math.random() + 1) * 100)) + (new Date()).getTime().toString().substr(-3)
+    let branch = await DbService.create(models.BranchModel, {...req.body, code: code})
     await DbService.create(models.StoreModel, {branch: branch._id})
     return res.json("Added branch successfully")
 }
