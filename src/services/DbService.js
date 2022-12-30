@@ -37,7 +37,7 @@ class DbService {
     }
 
     static async find(model, filter, dbOptions, extraOptions = {}) {
-        let data = await model.find(filter, dbOptions).select(extraOptions.excludeFields ? extraOptions.excludeFields : extraOptions.select).populate(extraOptions?.populate).sort(extraOptions.sort);
+        let data = await model.find(filter, dbOptions).select(extraOptions.excludeFields ? extraOptions.excludeFields : extraOptions.select).populate(extraOptions?.populate).sort(extraOptions.sort).lean();
         if (extraOptions.notAllowNull && !data) {
             throw new ApiError(400, "The resources does not exist");
         }

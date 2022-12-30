@@ -13,19 +13,37 @@ const schema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["FAILED", "UNDER_WARRANTY", "FIXED_ERROR", "IS_USING", "IN_STOCK", "IDLE"],
-            default: "IDLE"
+            enum: [
+                'NEWLY_PRODUCED',
+                'IMPORTED_STORE',
+                'TAKE_TO_DISTRIBUTOR',
+                'SOLD',
+                'FAILED_NEED_TO_WARRANTY',
+                "UNDER_WARRANTY",
+                "WARRANTY_DONE",
+                'WARRANTY_RETURNED_TO_CUSTOMER',
+                "FAILED_NEED_TO_FACTORY",
+                "FAILED_SENT_TO_FACTORY",
+                "FAILED_NEED_TO_SUMMON",
+                "RETURNED_TO_FACTORY"
+            ],
+            default: "NEWLY_PRODUCED"
         },
         store: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Store'
+        },
+        branch: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Branch'
         },
         progress: [
             {
                 action: {
                     enum: [
                         'NEWLY_PRODUCED',
-                        'TAKE TO DISTRIBUTOR',
+                        'IMPORTED_STORE',
+                        'TAKE_TO_DISTRIBUTOR',
                         'SOLD',
                         'FAILED_NEED_TO_WARRANTY',
                         "UNDER_WARRANTY",
@@ -43,8 +61,8 @@ const schema = new mongoose.Schema(
                     default: new Date()
                 },
                 location: {
-                  type: mongoose.Schema.Types.ObjectId,
-                  ref: 'Branch'
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Branch'
                 },
                 customer: {
                     type: mongoose.Schema.Types.ObjectId,

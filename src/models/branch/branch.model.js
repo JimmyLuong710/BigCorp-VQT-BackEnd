@@ -24,8 +24,7 @@ const schema = new mongoose.Schema(
         },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Account",
-            required: true
+            ref: "Account"
         },
         phone: {
             type: String,

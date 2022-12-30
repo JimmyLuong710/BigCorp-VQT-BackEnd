@@ -14,7 +14,8 @@ const produceProduct = async (req, res) => {
     for (let i = 0; i < req.body.quantity; i++) {
         devices.push({
             model: ((Math.random() + 1).toString(36).substring(8)) + '-' + Math.round(((Math.random() + 1) * 1000)),
-            product: req.body.product
+            product: req.body.product,
+            branch: req.account.branch
         })
     }
 
@@ -33,20 +34,24 @@ const produceProduct = async (req, res) => {
 const getProducts = async (req, res) => {
     let storeFilter = {
         branch: req.account.branch,
-        isTempStore: req.query.tempStore ? true : false,
+        isTempStore: req.query.tempStore,
     };
 
     const store = await models.StoreModel.findOne(storeFilter).select({products: 1}).populate({
         path: 'products',
-        select: 'product producedDate model',
+        select: 'product producedDate model status',
         populate: {
             path: 'product',
             select: 'productName',
             model: 'Product'
         }
     })
-   console.log(store)
-    return res.json(store.products);
+    let products = store.products
+    if(req.query.status) products = products.filter((product) => {
+        return product.status == req.query.status
+    })
+
+    return res.json(products);
 };
 
 const transportToStore = async (req, res) => {
@@ -56,7 +61,6 @@ const transportToStore = async (req, res) => {
         type: "IMPORTED",
         note: req.body.note,
     };
-    console.log(req.body)
     // update store in factory
     await DbService.updateOne(models.StoreModel, {
         branch: req.account.branch,
@@ -70,9 +74,9 @@ const transportToStore = async (req, res) => {
     // update status of product instance
     for (const product of req.body.products) {
         await DbService.updateOne(models.ProductInstanceModel, {_id: product}, {
-            status: "IN_STOCK",
+            status: "IMPORTED_STORE",
             store: store._id,
-            $push: {progress: {action: "FACTORY_TO_STORE", note: req.body.note, location: req.account.branch}}
+            $push: {progress: {action: "IMPORTED_STORE", location: req.account.branch}}
         });
     }
 
@@ -82,8 +86,33 @@ const transportToStore = async (req, res) => {
     return res.json("Imported successfully");
 };
 
+const handleOrder = async (req, res) => {
+    let transport = await DbService.updateOne(models.TransportModel, {_id: req.params.transportId},{status: req.body.status},{}, {} )
+    await DbService.create(models.BranchTrackingModel, {
+        branch: req.branch,
+        type: 'IMPORTED',
+        partner: transport.from,
+        products: transport.products,
+        handleType: req.body.status,
+        note: transport.note
+    })
+
+    return res.json('Handled successfully')
+}
+
+const getOrders = async (req, res) => {
+    let filter = {
+        to: req.account.branch,
+        status: 'PENDING'
+    }
+    const orders = await DbService.find(models.TransportModel, filter, {}, {populate: ['from', 'to', 'products']})
+    return res.json(orders)
+}
+
 module.exports = {
     produceProduct,
     getProducts,
     transportToStore,
+    getOrders,
+    handleOrder
 };

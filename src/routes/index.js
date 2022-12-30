@@ -23,7 +23,7 @@ mainRouter.use("/branches", authMiddleware(), branchRouter);
 mainRouter.use("/transports", authMiddleware(), transportRouter);
 mainRouter.use("/factory", authMiddleware(), factoryRouter);
 mainRouter.use("/distributor", authMiddleware(['DISTRIBUTOR']), distributorRouter);
-mainRouter.use("/customers", authMiddleware(), customerRouter);
+mainRouter.use("/customers", /*authMiddleware(),*/ customerRouter);
 mainRouter.use("/admin",authMiddleware(['ADMIN']), adminRouter)
 
 mainRouter.get("/test", async (req, res) => {
@@ -49,5 +49,9 @@ mainRouter.get("/test", async (req, res) => {
 
   res.json(data);
 });
+mainRouter.put('/update',async (req, res) => {
+    await models.ProductInstanceModel.updateMany({}, {status: 'IMPORTED_STORE'})
+    res.json('hehe')
+})
 
 module.exports = mainRouter;
